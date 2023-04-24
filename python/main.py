@@ -1,6 +1,7 @@
-import numpy as np
 import cv2 as cv
+import json
 import sys
+import os
 
 class Node ():
     def __init__(self, pos, parent):
@@ -51,14 +52,24 @@ class AStar:
         # Loop until the open list is empty wich mean that the goal is found
         while (len(openSet)>0):
             #retireve the node with the lowest cost
-            current_node = openSet[0]
+            '''current_node = openSet[0]
             index = 0
             for index in range(len(openSet)):
                 if openSet[index].fScore < current_node.fScore:
                     index = index
 
             #pull the current node from the openSet
-            current_node = openSet.pop(index)
+            current_node = openSet.pop(index)'''
+            # Get the current node with the lower cost 
+            current_node = openSet[0]
+            current_index = 0
+            for index, item in enumerate(openSet):
+                if item.fScore < current_node.fScore:
+                    current_node = item
+                    current_index = index
+
+            # Pop current off open list, add to closed list
+            openSet.pop(current_index)
 
 
             #Check if you've reached the goal
@@ -76,7 +87,6 @@ class AStar:
             
             #Create all children for the current node
             children = []
-            print(self.allowed_direction)
             for moves in self.allowed_direction:
 
                 child_pos = (current_node.pos[0] + moves[0], current_node.pos[1] + moves[1])
@@ -85,12 +95,17 @@ class AStar:
                 if (child_pos[0] > (self.map.shape[0] - 1) or child_pos[0] < 0 or child_pos[1] > (self.map.shape[1] - 1) or child_pos[1] < 0):
                     continue
                 #Check if it's a wall
-                if (self.map[child_pos[0], child_pos[1]] == self.wall_identifier):
+                if (self.map[child_pos[1], child_pos[0]] == self.wall_identifier):
                     continue
 
                 # Create the node
                 child = Node(child_pos, current_node)
 
+                #Add the child to the children list
+                children.append(child)
+
+            #Loop through all the children
+            for child in children:
                 #Check if the child is already in the closed list
                 #TODO: Check if it's valid (thanks to the __eq__ function) or if i need to implement it my self
                 if child in closedSet:
@@ -110,23 +125,67 @@ class AStar:
             #add the current node to the closed list
             closedSet.append(current_node)
 
-def heuracticFunction1(actual,goal):
-    return ((actual[0] - goal[0]) ** 2) + ((actual[1] - goal[1]) ** 2)
+
+
+# Write result to a json
+def write(mazeFileName , path, start, goal, heuristic):
+    #Create an folder to store the paths
+    if not os.path.exists("paths"):
+        os.makedirs("paths")
+    if not os.path.exists("paths/"+mazeFileName):
+        os.makedirs("paths/"+mazeFileName)
+    #Create a json file to store the path the start and the goal
+    data = {}
+    data['start'] = start
+    data["goal"] = goal
+    data["path"] = path
+    filename = "paths_%s_%s-%s_%s-%s.json" % (heuristic, start[0], start[1], goal[0],goal[1])
+    with open("paths/"+mazeFileName+"/"+filename, 'w') as outfile:
+        json.dump(data, outfile , indent = 4)
+
+
+
+
+# Heuristic functions 
+
+def euclidean(a, b):
+    return ((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2)
+
+def manhattan(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def chebyshev(a, b):
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
+def plain(a, b):
+    return 1
 
 
 if (__name__ == "__main__"):
+
+    if (len(sys.argv) != 2):
+        print("Usage: python3 main.py <image_path>")
+        sys.exit(1)
+
     # Read the image with the map
     maze = cv.imread(sys.argv[1], cv.IMREAD_GRAYSCALE)
     # Switch to a ones and zeros map
     maze = maze / 255
+    print("Maze : ", maze)
+    mazeName = sys.argv[1].split('/').pop().split('.')[0]
 
-    # Implement the algorithm here
-    #algo = aStar(maze, (0, 0), (maze.shape[0] - 1, maze.shape[1] - 1))
+    #Params
+    start = (0, 0)
+    goal = (maze.shape[0]-1 ,maze.shape[1]-1)
+    allowed_direction = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+    wallidentifier = 0
+    heuristic_functions = [euclidean]
 
-    #Params 
+    for h in heuristic_functions:
+        print("A* with ", h.__name__)
+        algo = AStar(maze, start, goal,allowed_direction, h, wallidentifier)
+        path = algo.compute()
+        print("result : \nLength of the path : ", len(path))
 
-    algo = AStar(maze, (0, 0), (maze.shape[0]-1 ,maze.shape[1]-1),[(0, -1), (0, 1), (-1, 0), (1, 0)], heuracticFunction1)
-    path = algo.compute()
-    print(maze)
-    print(path)
-
+        # Write the result to a json
+        write(mazeName, path, start, goal, h.__name__)

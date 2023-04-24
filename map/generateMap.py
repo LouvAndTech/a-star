@@ -4,10 +4,10 @@ import cv2 as cv
 if (__name__ == "__main__"):
     map = np.ones((20, 20))
     map[11:14, 4:14] = 0
-    map[4:14, 11:14] = 0
+    #map[4:20, 11:14] = 0
     map = map * 255
     print(map)
-    cv.imwrite("./map1.bmp", map)
+    cv.imwrite("./ressources/map/map3.bmp", map)
 
     # scale the map to 50x50 pixels for display
     scale_ratio = 50

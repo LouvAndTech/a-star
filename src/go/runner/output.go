@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+
+	ast "elouan-lerissel.fr/astar"
 )
 
 type outputJSON struct {
@@ -24,15 +26,15 @@ func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
-func WriteOutput(mazePath string, heuristic func(pos, pos) int, start pos, end pos, path []pos) error {
+func WriteOutput(mazePath string, heuristic func(ast.Pos, ast.Pos) int, start ast.Pos, end ast.Pos, path []ast.Pos) error {
 	//Get filename
 	mazeName := getMazeName(mazePath)
 	//Coonvert data to primitive type
-	st := []int{start.x, start.y}
-	en := []int{end.x, end.y}
+	st := []int{start.X, start.Y}
+	en := []int{end.X, end.Y}
 	var pathArr [][]int
 	for _, p := range path {
-		pathArr = append(pathArr, []int{p.x, p.y})
+		pathArr = append(pathArr, []int{p.X, p.Y})
 	}
 	//Create output struct
 	out := outputJSON{mazePath, st, en, pathArr}

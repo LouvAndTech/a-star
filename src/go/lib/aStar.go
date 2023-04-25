@@ -3,12 +3,12 @@ package astar
 import "fmt"
 
 // Pos type with x and y
-type pos struct {
-	x int
-	y int
+type Pos struct {
+	X int
+	Y int
 }
 
-func reversePath(arr []pos) []pos {
+func reversePath(arr []Pos) []Pos {
 	for i, j := 0, len(arr)-1; i < j; i, j = i+1, j-1 {
 		arr[i], arr[j] = arr[j], arr[i]
 	}
@@ -17,7 +17,7 @@ func reversePath(arr []pos) []pos {
 
 // Node struct to contain weight parent and pos
 type node struct {
-	pos    pos
+	pos    Pos
 	parent *node
 	gScore int
 	hScore int
@@ -25,7 +25,7 @@ type node struct {
 }
 
 // Node Contructor
-func newNode(pos pos, parent *node) node {
+func newNode(pos Pos, parent *node) node {
 	return node{
 		pos:    pos,
 		parent: parent,
@@ -37,7 +37,7 @@ func newNode(pos pos, parent *node) node {
 
 // Check if equal function
 func (a *node) equal(b node) bool {
-	if a.pos.x == b.pos.x && a.pos.y == b.pos.y {
+	if a.pos.X == b.pos.X && a.pos.Y == b.pos.Y {
 		return true
 	}
 	return false
@@ -67,24 +67,24 @@ func betterNodeExist(set []node, el node) bool {
 
 type AStar struct {
 	maze            [][]int
-	start           pos
-	end             pos
-	allowed_moves   []pos
-	heuristic       func(pos, pos) int
+	start           Pos
+	end             Pos
+	allowed_moves   []Pos
+	heuristic       func(Pos, Pos) int
 	wall_identifier int
 }
 
-func NewAstar(maze [][]int, start pos, end pos, allowed_moves []pos, heuristic func(pos, pos) int, wall_identifier *int) (*AStar, error) {
+func NewAstar(maze [][]int, start Pos, end Pos, allowed_moves []Pos, heuristic func(Pos, Pos) int, wall_identifier *int) (*AStar, error) {
 	wall_ident := 0
 	if wall_identifier != nil {
 		wall_ident = *wall_identifier
 	}
 	//Check if the start and goal position are withtin the maze
-	if start.x < 0 || start.x > len(maze) || start.y < 0 || start.y > len(maze[0]) || end.x < 0 || end.x > len(maze) || end.y < 0 || end.y > len(maze[0]) {
+	if start.X < 0 || start.X > len(maze) || start.Y < 0 || start.Y > len(maze[0]) || end.X < 0 || end.X > len(maze) || end.Y < 0 || end.Y > len(maze[0]) {
 		return nil, fmt.Errorf("Start position is outside the maze")
 	}
 	// Check if the start and end position are walls
-	if maze[start.x][start.y] == wall_ident || maze[end.x][end.y] == wall_ident {
+	if maze[start.X][start.Y] == wall_ident || maze[end.X][end.Y] == wall_ident {
 		return nil, fmt.Errorf("Start or Goal position is a wall")
 	}
 
@@ -100,10 +100,10 @@ func NewAstar(maze [][]int, start pos, end pos, allowed_moves []pos, heuristic f
 	return &output, nil
 }
 
-func (a *AStar) Solve() ([]pos, error) {
+func (a *AStar) Solve() ([]Pos, error) {
 	// Check if start is the same as Goal
-	if a.start.x == a.end.x && a.start.y == a.end.y {
-		return []pos{}, nil
+	if a.start.X == a.end.X && a.start.Y == a.end.Y {
+		return []Pos{}, nil
 	}
 
 	// Create the two first nodes
@@ -136,7 +136,7 @@ func (a *AStar) Solve() ([]pos, error) {
 		//Check if you've reached the goal
 		if currentNode.equal(goalNode) {
 			// Return the path
-			path := []pos{}
+			path := []Pos{}
 			for currentNode.parent != nil { // While the current node has a parent (all nodes except the start node)
 				path = append(path, currentNode.pos) // Add the current node to the path
 				currentNode = *currentNode.parent    // Go to the parent node
@@ -149,14 +149,14 @@ func (a *AStar) Solve() ([]pos, error) {
 		children := []node{}
 		for _, move := range a.allowed_moves {
 			// Get the new position
-			child_pos := pos{currentNode.pos.x + move.x, currentNode.pos.y + move.y}
+			child_pos := Pos{currentNode.pos.X + move.X, currentNode.pos.Y + move.Y}
 
 			//Check if it's contained within the maze
-			if child_pos.x > len(a.maze)-1 || child_pos.x < 0 || child_pos.y > len(a.maze[0])-1 || child_pos.y < 0 {
+			if child_pos.X > len(a.maze)-1 || child_pos.X < 0 || child_pos.Y > len(a.maze[0])-1 || child_pos.Y < 0 {
 				continue
 			}
 			//Check if it's a wall
-			if a.maze[child_pos.y][child_pos.x] == a.wall_identifier {
+			if a.maze[child_pos.Y][child_pos.X] == a.wall_identifier {
 				continue
 			}
 
@@ -194,6 +194,6 @@ func (a *AStar) Solve() ([]pos, error) {
 	return nil, fmt.Errorf("could not find a path")
 }
 
-func eucliendian_distance(a pos, b pos) int {
-	return (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)
+func Eucliendian_distance(a Pos, b Pos) int {
+	return (a.X-b.X)*(a.X-b.X) + (a.Y-b.Y)*(a.Y-b.Y)
 }

@@ -1,0 +1,1 @@
+# Here are found the ouput files for a specific map

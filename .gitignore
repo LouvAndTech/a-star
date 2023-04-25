@@ -1,1 +1,7 @@
 .DS_Store
+
+assets/map/*
+!assets/map/Readme.md
+
+out/*
+!out/Readme.md

@@ -1,0 +1,1 @@
+# Here are found the input file in form of bitmap

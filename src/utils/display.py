@@ -17,19 +17,17 @@ def display(maze, path):
     cv.destroyAllWindows()
 
 if (__name__ == "__main__"):
-    if (len(sys.argv) != 3):
-        print("Usage: python3 main.py <image_path> <path_path>")
+    if (len(sys.argv) != 2):
+        print("Usage: python3 main.py <path_path>")
         sys.exit(1)
-    # Read the image with the map
-    maze = cv.imread(sys.argv[1], cv.IMREAD_GRAYSCALE)
-    # Switch to a ones and zeros map
-    maze = maze / 255
 
     #Read from json
-    if os.path.exists(sys.argv[2]):
-        with open(sys.argv[2], 'r') as f:
+    if os.path.exists(sys.argv[1]):
+        with open(sys.argv[1], 'r') as f:
             data = json.load(f)
-    
-
+    # Read the image with the map
+    maze = cv.imread(data["mazePath"], cv.IMREAD_GRAYSCALE)
+    # Switch to a ones and zeros map
+    maze = maze / 255
     
     display(maze, data["path"])

@@ -116,6 +116,7 @@ class AStar:
                 child.fScore = child.gScore + child.hScore
 
                 # Child is already in the open list and has a lower cost
+                # FIXME Not sure this is working
                 for node in openSet:
                     if child == node and child.gScore > node.gScore:
                         continue
@@ -128,19 +129,20 @@ class AStar:
 
 
 # Write result to a json
-def write(mazeFileName , path, start, goal, heuristic):
+def write(mazePath, mazeFileName , path, start, goal, heuristic):
     #Create an folder to store the paths
-    if not os.path.exists("paths"):
-        os.makedirs("paths")
-    if not os.path.exists("paths/"+mazeFileName):
-        os.makedirs("paths/"+mazeFileName)
+    if not os.path.exists("out"):
+        os.makedirs("out")
+    if not os.path.exists("out/"+mazeFileName):
+        os.makedirs("out/"+mazeFileName)
     #Create a json file to store the path the start and the goal
     data = {}
+    data["mazePath"] = mazePath
     data['start'] = start
     data["goal"] = goal
     data["path"] = path
     filename = "paths_%s_%s-%s_%s-%s.json" % (heuristic, start[0], start[1], goal[0],goal[1])
-    with open("paths/"+mazeFileName+"/"+filename, 'w') as outfile:
+    with open("out/"+mazeFileName+"/"+filename, 'w') as outfile:
         json.dump(data, outfile , indent = 4)
 
 
@@ -171,7 +173,6 @@ if (__name__ == "__main__"):
     maze = cv.imread(sys.argv[1], cv.IMREAD_GRAYSCALE)
     # Switch to a ones and zeros map
     maze = maze / 255
-    print("Maze : ", maze)
     mazeName = sys.argv[1].split('/').pop().split('.')[0]
 
     #Params
@@ -182,10 +183,8 @@ if (__name__ == "__main__"):
     heuristic_functions = [euclidean]
 
     for h in heuristic_functions:
-        print("A* with ", h.__name__)
         algo = AStar(maze, start, goal,allowed_direction, h, wallidentifier)
         path = algo.compute()
-        print("result : \nLength of the path : ", len(path))
 
         # Write the result to a json
-        write(mazeName, path, start, goal, h.__name__)
+        write(sys.argv[1],mazeName, path, start, goal, h.__name__)
